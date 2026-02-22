@@ -51,9 +51,10 @@ public class MaterialMapStore {
     private final @NotNull HashSet<String> tridents;
     private final @NotNull HashSet<String> bows;
     private final @NotNull HashSet<String> crossbows;
-    private final @NotNull HashSet<String> tools;
-    private final @NotNull HashSet<String> enchantables;
     private final @NotNull HashSet<String> maces;
+    private final @NotNull HashSet<String> spears;
+    private final @NotNull HashSet<String> enchantables;
+    private final @NotNull HashSet<String> tools;
 
     private final @NotNull HashSet<String> ores;
     private final @NotNull HashSet<String> intendedToolPickAxe;
@@ -95,15 +96,15 @@ public class MaterialMapStore {
         crossbows = new HashSet<>();
         stringTools = new HashSet<>();
         prismarineTools = new HashSet<>();
-        tools = new HashSet<>();
-
         swords = new HashSet<>();
         axes = new HashSet<>();
         pickAxes = new HashSet<>();
         shovels = new HashSet<>();
         hoes = new HashSet<>();
         tridents = new HashSet<>();
+        spears = new HashSet<>();
         maces = new HashSet<>();
+        tools = new HashSet<>();
 
         enchantables = new HashSet<>();
 
@@ -459,6 +460,7 @@ public class MaterialMapStore {
         enchantables.addAll(bows);
         enchantables.addAll(crossbows);
         enchantables.addAll(maces);
+        enchantables.addAll(spears);
 
         enchantables.add("shears");
         enchantables.add("fishing_rod");
@@ -484,6 +486,7 @@ public class MaterialMapStore {
         fillShovels();
         fillTridents();
         fillMaces();
+        fillSpears();
         fillStringTools();
         fillPrismarineTools();
         fillBows();
@@ -502,6 +505,7 @@ public class MaterialMapStore {
         tools.addAll(bows);
         tools.addAll(crossbows);
         tools.addAll(maces);
+        tools.addAll(spears);
     }
 
     private void fillBows() {
@@ -525,6 +529,16 @@ public class MaterialMapStore {
 
     private void fillMaces() {
         maces.add("mace");
+    }
+
+    private void fillSpears() {
+        spears.add("wooden_spear");
+        spears.add("stone_spear");
+        spears.add("copper_spear");
+        spears.add("iron_spear");
+        spears.add("golden_spear");
+        spears.add("diamond_spear");
+        spears.add("netherite_spear");
     }
 
     private void fillTridents() {
@@ -659,6 +673,7 @@ public class MaterialMapStore {
         woodTools.add("wooden_hoe");
         woodTools.add("wooden_pickaxe");
         woodTools.add("wooden_shovel");
+        woodTools.add("wooden_spear");
     }
 
     private void fillStoneToolsWhiteList() {
@@ -667,6 +682,7 @@ public class MaterialMapStore {
         stoneTools.add("stone_hoe");
         stoneTools.add("stone_pickaxe");
         stoneTools.add("stone_shovel");
+        stoneTools.add("stone_spear");
     }
 
     private void fillCopperToolsWhiteList() {
@@ -675,6 +691,7 @@ public class MaterialMapStore {
         copperTools.add("copper_hoe");
         copperTools.add("copper_pickaxe");
         copperTools.add("copper_shovel");
+        copperTools.add("copper_spear");
     }
 
     private void fillIronToolsWhiteList() {
@@ -683,6 +700,7 @@ public class MaterialMapStore {
         ironTools.add("iron_hoe");
         ironTools.add("iron_pickaxe");
         ironTools.add("iron_shovel");
+        ironTools.add("iron_spear");
 
         //Used for repair, remove in 2.2
         //TODO: Remove in config update
@@ -704,6 +722,7 @@ public class MaterialMapStore {
         goldTools.add("golden_hoe");
         goldTools.add("golden_pickaxe");
         goldTools.add("golden_shovel");
+        goldTools.add("golden_spear");
     }
 
     private void fillDiamondToolsWhiteList() {
@@ -712,6 +731,7 @@ public class MaterialMapStore {
         diamondTools.add("diamond_hoe");
         diamondTools.add("diamond_pickaxe");
         diamondTools.add("diamond_shovel");
+        diamondTools.add("diamond_spear");
     }
 
     private void fillNetheriteToolsWhiteList() {
@@ -720,6 +740,7 @@ public class MaterialMapStore {
         netheriteTools.add("netherite_hoe");
         netheriteTools.add("netherite_pickaxe");
         netheriteTools.add("netherite_shovel");
+        netheriteTools.add("netherite_spear");
     }
 
     private void fillGlassBlockWhiteList() {
@@ -872,6 +893,14 @@ public class MaterialMapStore {
 
     public boolean isMace(@NotNull String id) {
         return maces.contains(id);
+    }
+
+    public boolean isSpear(@NotNull Material material) {
+        return isSpear(material.getKey().getKey());
+    }
+
+    public boolean isSpear(@NotNull String id) {
+        return spears.contains(id);
     }
 
     public boolean isLeatherArmor(@NotNull Material material) {

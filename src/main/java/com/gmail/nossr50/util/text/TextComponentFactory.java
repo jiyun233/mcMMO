@@ -38,7 +38,7 @@ public class TextComponentFactory {
      *
      * @param localeKey target locale string address
      * @param values vars to be passed to the locale loader
-     * @return
+     * @return a text component with the locale string and variables applied
      */
     public static TextComponent getNotificationMultipleValues(String localeKey, String... values) {
         String preColoredString = LocaleLoader.getString(localeKey, (Object[]) values);
@@ -544,18 +544,28 @@ public class TextComponentFactory {
         componentBuilder.append(Component.newline());
     }
 
+    /**
+     * @deprecated use appendSubSkillTextComponents(Player, List<Component>, PrimarySkillType)
+     * @param player target player
+     * @param textComponents list to append to
+     * @param parentSkill the parent skill
+     */
+    @Deprecated(since = "2.2.046", forRemoval = true)
     public static void getSubSkillTextComponents(Player player, List<Component> textComponents,
+        PrimarySkillType parentSkill) {
+        appendSubSkillTextComponents(player, textComponents, parentSkill);
+    }
+
+    /**
+     * Appends sub-skill text components to a list for a given parent skill
+     * @param player target player
+     * @param textComponents list to append to
+     * @param parentSkill the parent skill
+     */
+    public static void appendSubSkillTextComponents(Player player, List<Component> textComponents,
             PrimarySkillType parentSkill) {
         for (SubSkillType subSkillType : SubSkillType.values()) {
             if (subSkillType.getParentSkill() == parentSkill) {
-                //TODO: Hacky rewrite later
-                //Only some versions of MC have this skill
-                if (subSkillType == SubSkillType.FISHING_MASTER_ANGLER
-                        && mcMMO.getCompatibilityManager().getMasterAnglerCompatibilityLayer()
-                        == null) {
-                    continue;
-                }
-
                 if (Permissions.isSubSkillEnabled(player, subSkillType)) {
                     if (!InteractionManager.hasSubSkill(subSkillType)) {
                         textComponents.add(TextComponentFactory.getSubSkillTextComponent(player,

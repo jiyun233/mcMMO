@@ -168,6 +168,7 @@ public class PlayerListener implements Listener {
         if (WorldBlacklist.isWorldBlacklisted(event.getEntity().getWorld())) {
             return;
         }
+
         // world guard main flag check
         if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance()
                 .hasMainFlag((Player) event.getEntity())) {
@@ -342,8 +343,8 @@ public class PlayerListener implements Listener {
         FishingManager fishingManager = UserManager.getPlayer(player).getFishingManager();
 
         switch (event.getState()) {
+            // CAUGHT_FISH happens for any item caught (including junk and treasure)
             case CAUGHT_FISH:
-                //TODO Update to new API once available! Waiting for case CAUGHT_TREASURE
                 if (event.getCaught() != null) {
                     Item fishingCatch = (Item) event.getCaught();
 
@@ -488,8 +489,7 @@ public class PlayerListener implements Listener {
 
                         fishingManager.processExploiting(event.getHook().getLocation().toVector());
 
-                        if (fishingManager.isExploitingFishing(
-                                event.getHook().getLocation().toVector())) {
+                        if (fishingManager.isExploitingFishing()) {
                             player.sendMessage(LocaleLoader.getString("Fishing.ScarcityTip",
                                     ExperienceConfig.getInstance()
                                             .getFishingExploitingOptionMoveRange()));
@@ -675,6 +675,10 @@ public class PlayerListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteractLowest(PlayerInteractEvent event) {
+        if (event.getAction() == Action.PHYSICAL) {
+            return;
+        }
+
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getPlayer().getWorld())) {
             return;
@@ -817,6 +821,10 @@ public class PlayerListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerInteractMonitor(PlayerInteractEvent event) {
+        if (event.getAction() == Action.PHYSICAL) {
+            return;
+        }
+
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getPlayer().getWorld())) {
             return;
@@ -900,7 +908,6 @@ public class PlayerListener implements Listener {
 
                 HerbalismManager herbalismManager = mmoPlayer.getHerbalismManager();
 
-                // FakePlayerAnimationEvent fakeSwing = new FakePlayerAnimationEvent(event.getPlayer(), PlayerAnimationType.ARM_SWING); //PlayerAnimationEvent compat
                 if (!event.isCancelled() || event.useInteractedBlock() != Event.Result.DENY) {
                     //TODO: Is this code to set false from bone meal even needed? I'll have to double check later.
                     if (heldItem.getType() == Material.BONE_MEAL) {

@@ -3,6 +3,7 @@ package com.gmail.nossr50.util.skills;
 import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVP;
 import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
 import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
+import static com.gmail.nossr50.util.Permissions.canUseSubSkill;
 import static com.gmail.nossr50.util.skills.ProjectileUtils.isCrossbowProjectile;
 
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -19,6 +20,7 @@ import com.gmail.nossr50.skills.acrobatics.AcrobaticsManager;
 import com.gmail.nossr50.skills.archery.ArcheryManager;
 import com.gmail.nossr50.skills.axes.AxesManager;
 import com.gmail.nossr50.skills.maces.MacesManager;
+import com.gmail.nossr50.skills.spears.SpearsManager;
 import com.gmail.nossr50.skills.swords.SwordsManager;
 import com.gmail.nossr50.skills.taming.TamingManager;
 import com.gmail.nossr50.skills.tridents.TridentsManager;
@@ -331,6 +333,46 @@ public final class CombatUtils {
         printFinalDamageDebug(player, event, mmoPlayer);
     }
 
+    private static void processSpearsCombat(@NotNull LivingEntity target,
+            @NotNull Player player,
+            @NotNull EntityDamageByEntityEvent event) {
+        if (event.getCause() == DamageCause.THORNS) {
+            return;
+        }
+
+        double boostedDamage = event.getDamage();
+
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+
+        //Make sure the profiles been loaded
+        if (mmoPlayer == null) {
+            return;
+        }
+
+        final SpearsManager spearsManager = mmoPlayer.getSpearsManager();
+
+        if (canUseSubSkill(player, SubSkillType.SPEARS_SPEAR_MASTERY)) {
+            boostedDamage += spearsManager.getSpearMasteryBonusDamage()
+                    * mmoPlayer.getAttackStrength();
+        }
+
+        // Apply Limit Break DMG
+        if (canUseLimitBreak(player, target, SubSkillType.SPEARS_SPEARS_LIMIT_BREAK)) {
+            boostedDamage += (getLimitBreakDamage(
+                    player, target, SubSkillType.SPEARS_SPEARS_LIMIT_BREAK)
+                    * mmoPlayer.getAttackStrength());
+        }
+
+
+        event.setDamage(boostedDamage);
+
+        // Apply any non-damage effects here
+        spearsManager.potentiallyApplyMomentum();
+
+        processCombatXP(mmoPlayer, target, PrimarySkillType.SPEARS);
+        printFinalDamageDebug(player, event, mmoPlayer);
+    }
+
     private static void processAxeCombat(@NotNull LivingEntity target, @NotNull Player player,
             @NotNull EntityDamageByEntityEvent event) {
         if (event.getCause() == DamageCause.THORNS) {
@@ -530,8 +572,12 @@ public final class CombatUtils {
     public static void processCombatAttack(@NotNull EntityDamageByEntityEvent event,
             @NotNull Entity painSourceRoot,
             @NotNull LivingEntity target) {
-        Entity painSource = event.getDamager();
-        EntityType entityType = painSource.getType();
+        final Entity painSource = event.getDamager();
+        final EntityType entityType = painSource.getType();
+        final String damageType = event.getDamageSource().getDamageType().getKey().getKey();
+
+        boolean isDamageTypeSpear =
+                damageType.equalsIgnoreCase("SPEAR");
 
         if (target instanceof ArmorStand) {
             return;
@@ -574,7 +620,7 @@ public final class CombatUtils {
                 return;
             }
 
-            ItemStack heldItem = player.getInventory().getItemInMainHand();
+            final ItemStack heldItem = player.getInventory().getItemInMainHand();
 
             if (target instanceof Tameable) {
                 if (heldItem.getType() == Material.BONE) {
@@ -592,7 +638,16 @@ public final class CombatUtils {
                 }
             }
 
-            if (ItemUtils.isSword(heldItem)) {
+            if (isDamageTypeSpear) {
+                if (!mcMMO.p.getSkillTools()
+                        .canCombatSkillsTrigger(PrimarySkillType.SPEARS, target)) {
+                    return;
+                }
+                if (mcMMO.p.getSkillTools()
+                        .doesPlayerHaveSkillPermission(player, PrimarySkillType.SPEARS)) {
+                    processSpearsCombat(target, player, event);
+                }
+            } if (ItemUtils.isSword(heldItem)) {
                 if (!mcMMO.p.getSkillTools()
                         .canCombatSkillsTrigger(PrimarySkillType.SWORDS, target)) {
                     return;
@@ -871,8 +926,6 @@ public final class CombatUtils {
                     entity)) {
                 continue;
             }
-
-            //EventUtils.callFakeArmSwingEvent(attacker);
 
             switch (type) {
                 case SWORDS:
